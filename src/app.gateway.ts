@@ -10,21 +10,19 @@ import {
 
 @WebSocketGateway()
 export class AppGateway implements OnGatewayInit, OnGatewayDisconnect {
-//, OnGatewayConnection
+
   @WebSocketServer() server: Server;
   private logger: Logger = new Logger('AppGateway');
 
   @SubscribeMessage('msgToServer')
   handleMessage(client: Socket, payload: any): void {
-    /* this.logger.log(`message ${payload}`);
-    this.server.emit('msgToClient', payload); */
-
-
+    //should probably have a guard for this?
     const payLoad = JSON.stringify(payload);
     const pl = JSON.parse(payLoad);
     this.logger.log(`message ${payLoad}`);
     this.logger.log(`message ${pl.clientUniqueId}`);
-    this.server.to(pl.clientUniqueId).emit('msgToClient', payload);
+    this.server.to(pl.chatRoom).emit('msgToClient', payload);
+
   }
  
   afterInit(server: Server) {
@@ -34,11 +32,8 @@ export class AppGateway implements OnGatewayInit, OnGatewayDisconnect {
   handleDisconnect(client: Socket) {
     this.logger.log(`Client disconnected: ${client.id}`);
   }
- 
-  /* handleConnection(client: Socket, ...args: any[]) {
-    this.logger.log(`Client connected: ${client.id}`);
-  } */
 
+  //eventually have this emit when a user joins the chat
   @SubscribeMessage('joinRoom')
   handleRoomJoin(client: Socket, room: string){
     client.join(room);
